@@ -48,7 +48,7 @@ SIMULATION_PARAM = {
     # number of elements has to be equal to the number of clusters : 23 : [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 13: [1,1,1,1,1,1,1,1,1,1,1,1,1]
     "DMIMO_blockage_mode" : np.zeros([N_BS]), # 0 => blocked link     
     "precoding" : ["steering_angles"],#["MRT"], #None,"SVD", ZF,"MRT" , "steering_angles"
-    "graph_mode" : None,  # None,"xla","graph"
+    "graph_mode" : "xla",  # None,"xla","graph"
     "ebno_db" : list(np.arange( -30, 31, 2)), 
     "batch_size" : 2048,
     "num_target_bit_errors":None,
