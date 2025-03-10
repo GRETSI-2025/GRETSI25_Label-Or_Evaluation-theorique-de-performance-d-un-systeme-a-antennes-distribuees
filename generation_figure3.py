@@ -1,11 +1,7 @@
-# -*- coding: utf-8 -*-
 """
-Created on Thu Dec 26 18:19:01 2024
-
-@author: dskz2837
+Copyright (c) [2025] [Orange SA]
+Licensed under the MIT License. See the LICENSE file in the project root for full license information.
 """
-
-
 import matplotlib.pyplot as plt
 import numpy as np
 plt.close('all')

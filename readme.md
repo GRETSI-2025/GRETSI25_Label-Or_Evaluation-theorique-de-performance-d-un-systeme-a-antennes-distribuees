@@ -6,11 +6,11 @@ Ce dépôt contient le code source associé à l’article *« Formule théoriqu
 
 - [Installation](#installation)
 - [Utilisation](#utilisation)
-- [Configuration-et-Paramètres](#configuration-et-paramètres)
-- [Reproductibilité-des-résultats](#reproductibilité-des-résultats)
-- [Contribution](#contribution)
-- [Licence](#licence)
+- [Configuration et Paramètres](#configuration-et-paramètres)
+- [Reproductibilité des résultats](#reproductibilite-des-resultats)
 - [Remerciements](#remerciements)
+- [Licence](#licence)
+
 
 ## Installation
 
@@ -58,10 +58,57 @@ Exécutez le script principal pour obtenir les résultats de simulation :
 ```bash
 python main_Peb_and_MonteCarlo_simulation_DMIMO.py
 ```
-Le script va exécuter des simulations de Monte-Carlo pour estimer la probabilité d'erreur binaire (TEB) d’un système MIMO distribué dans des canaux à multi-trajets partiellement bloqués. Voici ce qui se passe :
+Le script va exécuter des simulations de Monte-Carlo pour estimer la probabilité d'erreur binaire (TEB) d’un système MIMO distribué dans des canaux à multi-trajets partiellement bloqués.
 
-#### Chargement des paramètres  
+##### Chargement des paramètres  
 Le script commence par définir les paramètres du système, tels que :  
+
+
+##### Exécution des simulations de Monte-Carlo  
+- La simulation génère des signaux à partir de données binaires aléatoires transmis à travers le canal potentiellement bloqué.  
+- Un **égaliseur** zero-forcing (ZF) est appliqué pour estimer le signal reçu.  
+- Le signal estimé permet d'obtenir les symboles de la constellation puis, les bits associés sont comparés à ceux envoyés pour mesurer le **taux d'erreurs binaire**.  
+
+##### Calcul de la probabilité d'erreur théorique   
+La probabilité d'erreur binaire (TEB) théorique est calculée en utilisant les expressions analytiques dérivées dans l’article. Ces expressions prennent en compte :  
+
+- Le **modèle de canal** non ligne de vue directe (NLoS) sélectionné (CDL-A, CDL-B et CDL-C),  
+- La **présence de clusters bloqués**,  
+- Le **rapport signal sur bruit (SNR)**,  
+- L'impact de l'égalisation sur les performances du système.  
+
+Les formules obtenues permettent d'estimer directement les performances du système **sans nécessiter de simulations Monte-Carlo**, ce qui est utile pour une validation rapide des résultats.  
+
+Cette probabilité d'erreur est ensuite comparée aux résultats issus des simulations pour **vérifier la cohérence des modèles théoriques** avec les performances mesurées en conditions simulées. 
+
+##### Affichage des résultats    
+Le script génère principalement des graphiques montrant :  
+- L’**évolution du TEB** en fonction du SNR.  
+- Une **comparaison entre les résultats analytiques et les simulations de Monte-Carlo**.  
+
+Il est possible d’accéder aux valeurs en analysant les données contenues dans les variables **ber_MC** et **Peb_QPSK**.
+
+### 2. Génération des figures PDF et CDF  
+
+Pour afficher les **figures 1 et 2** de l'article :  
+```bash
+python generation_figure1_et_figure2_illustration_PDF_CDF.py
+```
+
+#### 3. Génération de la figure des performances en TEB  
+
+Pour visualiser la **figure 3** regroupant les performances en TEB sous différentes conditions, exécutez la commande suivante :  
+
+```bash
+python generation_figure3.py
+```
+
+#### Personnalisation  
+Si vous souhaitez personnaliser la simulation, vous pouvez **modifier les paramètres** dans le script avant de l’exécuter. 
+
+
+## Configuration et Paramètres
+Les paramètres de simulation sont définis en début de fichier dans le script principal. Vous pouvez les modifier directement dans le code pour adapter les simulations à vos besoins.
 
 - **Nombre de symboles OFDM** : `num_ofdm_symbols = 14`  
 - **Espacement des sous-porteuses** : `subcarrier_spacing = 15 kHz`  
@@ -103,7 +150,7 @@ Le script commence par définir les paramètres du système, tels que :
   - Définit l'état des liens entre les stations de base et l'utilisateur. Une valeur de `0` indique un lien bloqué.  
 
 - **Type de précodage** : `precoding = ["steering_angles"]`  
-  - Spécifie la technique de précodage utilisée. Options possibles : `"None"`, `"SVD"`, `"ZF"`, `"MRT"`, `"steering_angles"`.  
+  - Spécifie la technique de précodage utilisée. Options possibles : `"None"`, `"ZF"`.  
 
 - **Mode de graphe TensorFlow** : `graph_mode = None`  
   - Permet d'activer ou non le mode graphe TensorFlow. Options possibles : `"None"`, `"xla"`, `"graph"`.  
@@ -111,70 +158,40 @@ Le script commence par définir les paramètres du système, tels que :
 - **Rapport signal sur bruit (SNR) en dB** :  
 
   ` ebno_db = list(np.arange(-30, 31, 2)) `
+- **Taille de lot (`batch_size`)** : `2048`  
+  - Ce paramètre définit le **nombre d'échantillons traités simultanément** dans la simulation.  
+  - **Il dépend des ressources disponibles sur chaque PC** 💻.  
+  - **⚠️ Attention :** Une valeur trop élevée peut entraîner une **erreur mémoire** ❌.  
+  - **Recommandation** : Commencer avec une **valeur faible** et **augmenter progressivement** le nombre d'itérations (`max_mc_iter`) pour assurer une exécution stable.  
 
-#### Calcul du TEB théorique  
-À partir des expressions analytiques dérivées dans l’article, le script évalue la probabilité d'erreur binaire pour différentes configurations.  
+- **Nombre cible d’erreurs binaires (`num_target_bit_errors`)** : `None`  
+  - Si défini, la simulation s'arrête une fois que ce nombre d'erreurs est atteint.  
 
-#### Exécution des simulations de Monte-Carlo  
-- Il génère des **signaux aléatoires** transmis à travers le canal partiellement bloqué.  
-- Un **égaliseur** est appliqué pour estimer le signal reçu.  
-- Le signal estimé est comparé au signal original pour mesurer le **taux d'erreurs**.  
+- **BER cible (`target_ber`)** : `10e-6`  
+  - Seuil de la **probabilité d'erreur binaire** recherché pour la simulation.  
 
-#### Affichage des résultats    
-- Les résultats sont utilisés pour générer des **courbes de performance**.
-- Il est possible d'observer les valeurs en observant les variables **ber_MC** et **Peb_QPSK**.  
-
-#### Affichage des courbes de performance  
-Le script génère des graphiques montrant :  
-- L’**évolution du TEB** en fonction du SNR.  
-- Une **comparaison entre les résultats analytiques et les simulations de Monte-Carlo**.  
-
-#### Personnalisation  
-Si vous souhaitez personnaliser la simulation, vous pouvez **modifier les paramètres** dans le script avant de l’exécuter. 
+- **Nombre maximal d’itérations Monte-Carlo (`max_mc_iter`)** : `10`  
+  - Définit le **nombre d'itérations Monte-Carlo** pour garantir des résultats statistiquement significatifs.  
+  - **Si `batch_size` est faible, il est conseillé d'augmenter `max_mc_iter` pour obtenir une meilleure précision**.  
 
 
-# Configuration-et-Paramètres
-Les paramètres de simulation (nombre de BS, liste des clusters bloqués, SNR, etc.) sont définis en début de fichier dans le script principal. Vous pouvez les modifier directement dans le code pour adapter les simulations à vos besoins.
-
-Exemple :
-
-python
-Copier
-# Nombre de base stations
-NUM_BS = 4
-
-# Indice des clusters bloqués pour certaines BS
-BLOCKED_CLUSTERS = {
-    0: [1, 2, 3],  # Pour la BS 0, les clusters 1, 2 et 3 sont bloqués
-    # ... autres configurations
-}
-
-# Paramètres de simulation
-SNR_dB = 12  # Exemple de rapport Eb/N0 en dB
-(N’hésitez pas à compléter ou ajuster cette section en fonction des détails de votre code.)
-
-# Reproductibilité-des-résultats
+## reproductibilite des resultats
 Ce dépôt vise à assurer la reproductibilité de la recherche :
+- L’ensemble des scripts et configurations utilisés pour générer les résultats est fourni.
+- Des instructions détaillées (ci-dessus) expliquent comment configurer et exécuter le code, que ce soit sur une machine disposant d’un GPU ou uniquement d’un CPU.
+- Les contributions sont les bienvenues. Pour signaler des bugs ou proposer des améliorations :
+-- Ouvrez une issue dans ce dépôt.
+-- Soumettez une pull request avec vos modifications.
 
-L’ensemble des scripts et configurations utilisés pour générer les résultats est fourni.
-Les versions exactes des dépendances sont indiquées dans le fichier requirements.txt.
-Des instructions détaillées (ci-dessus) expliquent comment configurer et exécuter le code, que ce soit sur une machine disposant d’un GPU ou uniquement d’un CPU.
-Contribution
-Les contributions sont les bienvenues. Pour signaler des bugs ou proposer des améliorations :
 
-Ouvrez une issue dans ce dépôt.
-Soumettez une pull request avec vos modifications.
-Licence
-(Précisez ici la licence applicable à votre projet, par exemple MIT, Apache, etc.)
-
-# Remerciements
+## Remerciements
 Ce travail a été financé en partie par le programme Horizon Europe (Hexa-X-II, grant No. 101095759).
 
 ## Licence et Citation
 
 Ce projet utilise Sionna, une bibliothèque open-source sous licence Apache 2.0. Veuillez consulter le fichier [LICENSE](https://github.com/NVlabs/sionna/blob/main/LICENSE) pour plus de détails.
 
-Si vous utilisez ce logiciel dans vos travaux, merci de le citer comme suit :
+Si vous utilisez le logiciel Sionna dans vos travaux, merci de le citer comme suit :
 
 ```bibtex
 @article{sionna,
@@ -185,3 +202,4 @@ Si vous utilisez ce logiciel dans vos travaux, merci de le citer comme suit :
     journal = {arXiv preprint},
     online = {https://arxiv.org/abs/2203.11854}
 }
+```
