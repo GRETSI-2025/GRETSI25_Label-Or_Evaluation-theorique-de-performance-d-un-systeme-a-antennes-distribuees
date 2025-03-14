@@ -7,7 +7,6 @@ Licensed under the MIT License. See the LICENSE file in the project root for ful
 import matplotlib.pyplot as plt
 import numpy as np
 import sionna   # numerical communication library
-import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 import time
 # own module importation
