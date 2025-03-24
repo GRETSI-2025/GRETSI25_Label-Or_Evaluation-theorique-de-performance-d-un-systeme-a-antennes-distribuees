@@ -1,4 +1,4 @@
-# recherche reproductible GRETSI25 : Formule théorique de la probabilité d’erreur binaire d’un système MIMO distribué dans des canaux à multi-trajets partiellement bloqués
+# recherche reproductible GRETSI25 : Évaluation théorique de performance d'un système à antennes  distribuées sur canaux multi-trajets partiellement bloqués
 
 Ce dépôt contient le code source associé à l’article *« Formule théorique de la probabilité d’erreur binaire d’un système MIMO distribué dans des canaux à multi-trajets partiellement bloqués »* présenté à la conférence GRETSI 2025 à Strasbourg. L’objectif est de garantir la reproductibilité des résultats (label « recherche reproductible ») en fournissant l’ensemble des scripts et instructions nécessaires à la simulation et à l’obtention des courbes de performances en terme de TEB présentées dans l'article.
 
