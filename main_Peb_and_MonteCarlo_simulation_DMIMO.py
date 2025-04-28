@@ -1,3 +1,5 @@
+# %%
+
 
 """
 Copyright (c) [2025] [Orange SA]
@@ -69,7 +71,7 @@ info_text = "\n".join(
     f"Base Station {i+1} : {count} blocked cluster(s) at index(s) {indices}"
     for i, (count, indices) in enumerate(zip(blocked_counts, adjusted_blocked_indices))
 )
-
+# test commit
 #############################################################################################
 # Model definition
 #############################################################################################
