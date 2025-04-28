@@ -1,3 +1,4 @@
+
 """
 Copyright (c) [2025] [Orange SA]
 Licensed under the MIT License. See the LICENSE file in the project root for full license information.
@@ -175,7 +176,7 @@ class DistributedMIMOModel(tf.keras.Model):
         #                   Define Antenna Arrays for UE and BS               #
         #######################################################################
         # Create the UE (User Equipment) antenna array using an omnidirectional pattern.
-        self.ue_array = sionna.channel.tr38901.AntennaArray(
+        self.ue_array = sionna.phy.channel.tr38901.AntennaArray(
             num_rows=1,
             num_cols=self.num_ue_antennas,
             polarization="single",
@@ -190,7 +191,7 @@ class DistributedMIMOModel(tf.keras.Model):
         
         # Create the BS (Base Station) antenna array.
         # Here, a single antenna per BS is assumed.
-        self.bs_array = sionna.channel.tr38901.AntennaArray(
+        self.bs_array = sionna.phy.channel.tr38901.AntennaArray(
             num_rows=1,
             num_cols=1,  # Single antenna per BS; adjust if using multiple antennas.
             polarization="single",
@@ -209,7 +210,7 @@ class DistributedMIMOModel(tf.keras.Model):
         #######################################################################
         self.cdl_channel_models = []
         for bs_index, bs_model in enumerate(self.cdl_models):
-            cdl_channel = sionna.channel.tr38901.CDL(
+            cdl_channel = sionna.phy.channel.tr38901.CDL(
                 model=bs_model,
                 delay_spread=self.delay_spread,
                 carrier_frequency=self.carrier_frequency,
@@ -224,8 +225,8 @@ class DistributedMIMOModel(tf.keras.Model):
         #######################################################################
         #           Initialize Sionna Components for the Simulation           #
         #######################################################################
-        self.stream_manager = sionna.mimo.StreamManagement(np.array([[1]]), self.num_streams_per_tx)
-        self.resource_grid = sionna.ofdm.ResourceGrid(
+        self.stream_manager = sionna.phy.mimo.StreamManagement(np.array([[1]]), self.num_streams_per_tx)
+        self.resource_grid = sionna.phy.ofdm.ResourceGrid(
             num_ofdm_symbols=self.num_ofdm_symbols,
             fft_size=self.fft_size,
             subcarrier_spacing=self.subcarrier_spacing,
@@ -237,12 +238,12 @@ class DistributedMIMOModel(tf.keras.Model):
             pilot_pattern=self.pilot_pattern,
             pilot_ofdm_symbol_indices=self.pilot_ofdm_symbol_indices)
         
-        self.resource_grid_demapper = sionna.ofdm.ResourceGridDemapper(self.resource_grid, self.stream_manager)
-        self.frequencies = sionna.channel.subcarrier_frequencies(self.resource_grid.fft_size,
+        self.resource_grid_demapper = sionna.phy.ofdm.ResourceGridDemapper(self.resource_grid, self.stream_manager)
+        self.frequencies = sionna.phy.channel.subcarrier_frequencies(self.resource_grid.fft_size,
                                                                   self.resource_grid.subcarrier_spacing)
-        self.channel_frequency = sionna.channel.ApplyOFDMChannel(add_awgn=True)
-        self.modulator = sionna.ofdm.OFDMModulator(self.cyclic_prefix_length)
-        self.binary_source = sionna.utils.BinarySource()
+        self.channel_frequency = sionna.phy.channel.ApplyOFDMChannel(add_awgn=True)
+        self.modulator = sionna.phy.ofdm.OFDMModulator(self.cyclic_prefix_length)
+        self.binary_source = sionna.phy.mapping.BinarySource()
         
         # Total number of data bits transmitted in one resource grid
         self.num_data_bits = int(self.resource_grid.num_data_symbols * self.bits_per_symbol)
@@ -250,15 +251,15 @@ class DistributedMIMOModel(tf.keras.Model):
         # Choose mapping and demapping based on modulation order:
         # For a single bit per symbol, PAM is used; otherwise, QAM is used.
         if self.bits_per_symbol == 1:
-            self.mapper = sionna.mapping.Mapper("pam", self.bits_per_symbol)
-            self.demapper = sionna.mapping.Demapper("app", "pam", self.bits_per_symbol, hard_out=True)
+            self.mapper = sionna.phy.mapping.Mapper("pam", self.bits_per_symbol)
+            self.demapper = sionna.phy.mapping.Demapper("app", "pam", self.bits_per_symbol, hard_out=True)
         else:
-            self.mapper = sionna.mapping.Mapper("qam", self.bits_per_symbol)
-            self.demapper = sionna.mapping.Demapper("app", "qam", self.bits_per_symbol, hard_out=True)
+            self.mapper = sionna.phy.mapping.Mapper("qam", self.bits_per_symbol)
+            self.demapper = sionna.phy.mapping.Demapper("app", "qam", self.bits_per_symbol, hard_out=True)
         
-        self.resource_grid_mapper = sionna.ofdm.ResourceGridMapper(self.resource_grid)
-        self.equalizer = sionna.ofdm.ZFEqualizer(self.resource_grid, self.stream_manager)
-        self.remove_nulled_subcarriers = sionna.ofdm.RemoveNulledSubcarriers(self.resource_grid)
+        self.resource_grid_mapper = sionna.phy.ofdm.ResourceGridMapper(self.resource_grid)
+        self.equalizer = sionna.phy.ofdm.ZFEqualizer(self.resource_grid, self.stream_manager)
+        self.remove_nulled_subcarriers = sionna.phy.ofdm.RemoveNulledSubcarriers(self.resource_grid)
         
         #######################################################################
         #                   Plot Coordinate Systems (if enabled)              #
@@ -319,7 +320,7 @@ class DistributedMIMOModel(tf.keras.Model):
         # PHY Layer: Transmitter operations
         ###########################################################################
         # Convert Eb/N0 in dB to noise variance using Sionna helper function.
-        noise = sionna.utils.ebnodb2no(ebno_db, self.bits_per_symbol, self.coderate, self.resource_grid)
+        noise = sionna.phy.utils.ebnodb2no(ebno_db, self.bits_per_symbol, self.coderate, self.resource_grid)
 
         # Generate transmit bits and map them to modulation symbols.
         tx_bits = self.binary_source([batch_size, 1, self.num_streams_per_tx, self.num_data_bits])
@@ -385,10 +386,10 @@ class DistributedMIMOModel(tf.keras.Model):
             # Convert CIRs to Frequency-Domain Channel Responses
             ###################################################################
             # The "normalize" parameter determines whether channel gains are normalized.
-            channel_freq = sionna.channel.cir_to_ofdm_channel(
+            channel_freq = sionna.phy.channel.cir_to_ofdm_channel(
                 self.frequencies, cir_unblocked_list[bs_idx][0], cir_unblocked_list[bs_idx][1],
                 normalize=self.normalize_channel)
-            channel_freq_blocked = sionna.channel.cir_to_ofdm_channel(
+            channel_freq_blocked = sionna.phy.channel.cir_to_ofdm_channel(
                 self.frequencies, cir_blocked_list[bs_idx][0], cir_blocked_list[bs_idx][1],
                 normalize=self.normalize_channel)
             channel_freq_list.append(channel_freq)
@@ -400,9 +401,9 @@ class DistributedMIMOModel(tf.keras.Model):
             # For downlink, noise is added only for the first BS; subsequent BS signals use zero noise.
             if self.direction == "downlink":
                 if bs_idx == 0:
-                    rx_signal = self.channel_frequency([tx_precoded_rg[bs_idx], channel_freq_blocked, noise])
+                    rx_signal = self.channel_frequency(tx_precoded_rg[bs_idx], h_freq=channel_freq_blocked, no=noise)
                 else:
-                    rx_signal = self.channel_frequency([tx_precoded_rg[bs_idx], channel_freq_blocked, 0])
+                    rx_signal = self.channel_frequency(tx_precoded_rg[bs_idx], h_freq=channel_freq_blocked, no=0.0)
                 received_signals_list.append(rx_signal)
 
             ###################################################################
@@ -446,7 +447,7 @@ class DistributedMIMOModel(tf.keras.Model):
         equalized_symbols = tf.squeeze(equalized_symbols, axis=1)
 
         # Demap equalized symbols to generate soft bit estimates using the configured demapper.
-        demapped_llr = self.demapper([equalized_symbols, noise])
+        demapped_llr = self.demapper(equalized_symbols, no=noise)
 
         ###########################################################################
         # Optional: Custom Demapping Implementation for Specific Modulation Orders
@@ -579,7 +580,7 @@ model_distributed_MIMO = DistributedMIMOModel(num_ofdm_symbols = SIMULATION_PARA
 #############################################################################################
 # CALL THE MODEL with selected execution
 ############################################################################################# 
-ber_plots = sionna.utils.PlotBER("BER Vs Eb/N0") # info_text
+ber_plots = sionna.phy.utils.PlotBER("BER Vs Eb/N0") # info_text
 t_start = time.perf_counter()
 ber_MC, bler_MC = ber_plots.simulate(model_distributed_MIMO, 
                     ebno_dbs=SIMULATION_PARAM["ebno_db"], 
@@ -587,7 +588,7 @@ ber_MC, bler_MC = ber_plots.simulate(model_distributed_MIMO,
                     graph_mode = SIMULATION_PARAM["graph_mode"], 
                     num_target_block_errors = None, 
                     num_target_bit_errors = SIMULATION_PARAM["num_target_bit_errors"],
-                    # target_ber  = SIMULATION_PARAM["target_ber"],
+                    target_ber  = SIMULATION_PARAM["target_ber"],
                     soft_estimates = True,
                     max_mc_iter = SIMULATION_PARAM["max_mc_iter"], # run 1000 Monte-Carlo simulations maximum (each with batch_size samples)
                     show_fig=False);
