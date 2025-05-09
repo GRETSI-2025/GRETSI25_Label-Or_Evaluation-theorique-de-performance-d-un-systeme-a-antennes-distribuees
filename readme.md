@@ -14,7 +14,16 @@ Ce dépôt contient le code source associé à l’article *« Formule théoriqu
 
 ## Installation
 
-Ce projet est développé en Python et utilise la bibliothèque Sionna pour les simulations de communication numérique. Pour installer Sionna et ses dépendances, veuillez consulter le guide d'installation officiel : [https://nvlabs.github.io/sionna/installation.html](https://nvlabs.github.io/sionna/installation.html)
+Ce projet est développé en Python et utilise la bibliothèque Sionna pour les simulations de communication numérique.
+
+Version testée : sionna==1.0.2
+
+Installation rapide :
+```bash
+pip install sionna==1.0.2
+``` 
+Pour plus de détails sur l’installation de Sionna, voir la documentation officielle :
+[https://nvlabs.github.io/sionna/installation.html](https://nvlabs.github.io/sionna/installation.html)
 
 ### Prérequis
 
@@ -46,7 +55,7 @@ Le dépôt contient les fichiers suivants :
 
 - **`main_Peb_and_MonteCarlo_simulation_DMIMO.py`** : Script principal permettant d’obtenir les résultats de TEB théorique et issus de simulations de Monte-Carlo en fonction des différents paramètres définis dans la section [Configuration et Paramètres](#configuration-et-paramètres).
 - **`generation_figure1_et_figure2_illustration_PDF_CDF.py`** : Script générant les figures 1 et 2 illustrant les fonctions de densité de probabilité (PDF) et les fonctions de distribution cumulative (CDF) du signal reçu mal égalisé.
-- **`generation_figure3_et_figure4.py`** : Script générant la figure regroupant les valeurs obtenues pour les performances en TEB sous différentes conditions.
+- **`generation_figure3_from_csv.py`** : Script générant la figure regroupant les valeurs obtenues pour les performances en TEB sous différentes conditions.
 - **`useful_functions.py`** : Ce fichier contient diverses fonctions utilisées dans `main_Peb_and_MonteCarlo_simulation_DMIMO.py` pour la simulation et l’analyse des résultats.
 - **`readme.md`** : Ce fichier contenant la documentation du dépôt.
 
@@ -59,10 +68,18 @@ Exécutez le script principal pour obtenir les résultats de simulation :
 python main_Peb_and_MonteCarlo_simulation_DMIMO.py
 ```
 Le script va exécuter des simulations de Monte-Carlo pour estimer la probabilité d'erreur binaire (TEB) d’un système MIMO distribué dans des canaux à multi-trajets partiellement bloqués.
-
+Les résultats (courbes TEB théorique et Monte-Carlo) sont automatiquement sauvegardés au format `.csv` dans le répertoire `results_csv/`.
 ##### Chargement des paramètres  
 Le script commence par définir les paramètres du système, tels que :  
+- Le **nombre de stations de base** (BS) et d'antennes utilisateur (UE)  
+- Le **type de canal** CDL (ex. CDL-C, CDL-B) basé sur le modèle 3GPP TR38.901  
+- Les **caractéristiques OFDM** : taille FFT, espacement des sous-porteuses, etc.  
+- Le **schéma de modulation** utilisé (ex. QPSK avec 2 bits/symbole)  
+- Le **niveau de blocage des clusters** dans chaque liaison BS–UE  
+- Les **valeurs de $E_b/N_0$** testées pour évaluer le TEB  
+- Le **nombre d’itérations Monte-Carlo** et d’erreurs cibles
 
+Ces paramètres peuvent être ajustés dans le dictionnaire `SIMULATION_PARAM` au début du script `main_Peb_and_MonteCarlo_simulation_DMIMO.py`.
 
 ##### Exécution des simulations de Monte-Carlo  
 - La simulation génère des signaux à partir de données binaires aléatoires transmis à travers le canal potentiellement bloqué.  
@@ -86,7 +103,13 @@ Le script génère principalement des graphiques montrant :
 - L’**évolution du TEB** en fonction du SNR.  
 - Une **comparaison entre les résultats analytiques et les simulations de Monte-Carlo**.  
 
-Il est possible d’accéder aux valeurs en analysant les données contenues dans les variables **ber_MC** et **Peb_QPSK**.
+Les données numériques sont automatiquement sauvegardées sous forme de fichiers `.csv` dans le dossier `results_csv_test/`.
+
+Pour afficher les courbes à partir de ces résultats, exécute le fichier suivant :  
+```bash
+python generation_figure3_from_csv.py
+```
+Cela ouvrira une figure comparant les TEBs théoriques et simulés pour chaque scénario de blocage.
 
 ### 2. Génération des figures PDF et CDF  
 
