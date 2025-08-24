@@ -1,5 +1,15 @@
 # recherche reproductible GRETSI25 : Évaluation théorique de performance d'un système à antennes  distribuées sur canaux multi-trajets partiellement bloqués
 
+<hr>
+
+**_Dépôt labelisé dans le cadre du [Label Reproductible du GRESTI'25](https://gretsi.fr/colloque2025/recherche-reproductible/)_**
+
+| Label décerné | Auteur | Rapporteur | Éléments reproduits | Liens |
+|:-------------:|:------:|:----------:|:-------------------:|:------|
+| ![](label_or.png) | Thibaut ROLLAND<br>[@thibaut29](https://github.com/thibaut29) | Thomas MOREAU<br>[@tomMoral](https://github.com/tomMoral) |  Figures 1 à 3 | 📌&nbsp;[Dépôt&nbsp;original](https://gitlab.com/thibaut_29450/recherche_reproductible_gretsi25)<br>⚙️&nbsp;[Issue](https://github.com/GRETSI-2025/Label-Reproductible/issues/5)<br>📝&nbsp;[Rapport](https://github.com/akrah/test/tree/main/rapports/Rapport_issue_05) |
+
+<hr>
+
 Ce dépôt contient le code source associé à l’article *« Formule théorique de la probabilité d’erreur binaire d’un système MIMO distribué dans des canaux à multi-trajets partiellement bloqués »* présenté à la conférence GRETSI 2025 à Strasbourg. L’objectif est de garantir la reproductibilité des résultats (label « recherche reproductible ») en fournissant l’ensemble des scripts et instructions nécessaires à la simulation et à l’obtention des courbes de performances en terme de TEB présentées dans l'article.
 
 ## Table des matières
